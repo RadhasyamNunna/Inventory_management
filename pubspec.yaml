@@ -30,6 +30,7 @@ dependencies:
   google_sign_in: ^5.0.2
   font_awesome_flutter: ^9.0.0
   flutter_barcode_scanner: ^2.0.0
+  http: ^0.13.1
 
 
 

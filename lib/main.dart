@@ -3,6 +3,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:inventory_management/screens/home/loginHome.dart';
+import 'package:inventory_management/services/api_class.dart';
 // import 'package:inventory_management/screens/authentication/authenticate.dart';
 // import 'package:inventory_management/screens/home/home.dart';
 
@@ -16,6 +17,7 @@ import 'package:inventory_management/screens/authentication/googleprovider.dart'
  dynamic result;
  dynamic name;
  List codes=[];
+ List<Future<APIClass>> code_names=[];
 
 // Future<void> main() async {
 //   // print('hello');

@@ -1,11 +1,15 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:inventory_management/fonts/my_flutter_app_icons.dart';
 import 'package:inventory_management/screens/home/home.dart';
 import 'package:inventory_management/screens/authentication/googleprovider.dart';
+import 'package:inventory_management/services/api_class.dart';
 import 'package:provider/provider.dart';
 import 'package:english_words/english_words.dart';
+import 'package:http/http.dart' as http;
 
 import '../main.dart';
 
@@ -23,6 +27,9 @@ class _Barcode_homeState extends State<Barcode_home> {
   var result='kya hein ye ';
 
 
+
+
+
   Future<void> scanBarcodeNormal() async {
     String barcodeScanRes;
     // Platform messages may fail, so we use a try/catch PlatformException.
@@ -31,6 +38,7 @@ class _Barcode_homeState extends State<Barcode_home> {
           '#ff6666', 'Cancel', true, ScanMode.BARCODE);
       print(barcodeScanRes);
       codes.add(barcodeScanRes);
+      code_names.add(getData(barcodeScanRes));
       print(codes);
     } on PlatformException {
       barcodeScanRes = 'Failed to get platform version.';
@@ -191,3 +199,11 @@ class _Barcode_homeState extends State<Barcode_home> {
   }
 }
 
+Future<APIClass> getData(code) async{
+  //making request
+  http.Response response = await http.get(Uri.parse('file:///C:/Users/Shiva/Documents/cppbox/barcode=$code.html'));
+  final data = jsonDecode(response.body);
+
+  return APIClass.fromJson(data);
+
+}
