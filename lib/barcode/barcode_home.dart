@@ -1,19 +1,26 @@
 import 'dart:convert';
+import 'dart:ui';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
+import 'package:inventory_management/barcode/Info.dart';
 import 'package:inventory_management/fonts/my_flutter_app_icons.dart';
+import 'package:inventory_management/item.dart';
 import 'package:inventory_management/screens/home/home.dart';
 import 'package:inventory_management/screens/authentication/googleprovider.dart';
 import 'package:inventory_management/services/api_class.dart';
 import 'package:provider/provider.dart';
-import 'package:english_words/english_words.dart';
 import 'package:http/http.dart' as http;
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter/scheduler.dart' show timeDilation;
 
 import '../main.dart';
 
-
+List<Item> goods=[];
+// List<Map> goodsNames=[];
 class Barcode_home extends StatefulWidget {
 
   @override
@@ -25,6 +32,21 @@ class _Barcode_homeState extends State<Barcode_home> {
   static const IconData userIcon= IconData(0xe009, fontFamily: 'MaterialIcons');
   static const IconData user=MyFlutterApp.user;
   var result='kya hein ye ';
+  var isSelected=false;
+  var mycolor=Colors.white;
+  // Map <String, String> x ={'hi':'hello'};
+  final FirebaseAuth auth = FirebaseAuth.instance;
+
+  String inputData([int a=0]) {
+    final User usr = auth.currentUser!;
+    String uid = usr.uid;
+    String name=usr.displayName!;
+    if( a==1){
+     return uid;
+    }
+    else{return name;}
+    // here you write the codes to input the data into firestore
+  }
 
 
 
@@ -38,6 +60,7 @@ class _Barcode_homeState extends State<Barcode_home> {
           '#ff6666', 'Cancel', true, ScanMode.BARCODE);
       print(barcodeScanRes);
       codes.add(barcodeScanRes);
+      // goods.add(Item(bcode: barcodeScanRes));
       code_names.add(getData(barcodeScanRes));
       print(codes);
     } on PlatformException {
@@ -63,8 +86,100 @@ class _Barcode_homeState extends State<Barcode_home> {
   //
   // }
 
-  Widget Ourlist(BuildContext context){
-    print('hello');
+
+
+  Future<void> adddata(codes) async{
+    FirebaseFirestore.instance.collection('store').add(codes);
+  }
+  Future <String> Getdata() async{
+    await FirebaseFirestore.instance.collection('store').doc(FirebaseAuth.instance.currentUser!.displayName).get().then((DocumentSnapshot documentSnapshot) {
+      if(documentSnapshot.exists){
+        print('---------------------------');
+        print(documentSnapshot.data());
+        Map <String, dynamic> x =documentSnapshot.data()!;
+        print(x['codes']);
+        codes=x['codes'];
+        print(x['goods'].runtimeType);
+        print(goodsNames);
+        goodsNames=x['goods'];
+        print('hello');
+        print(goodsNames);
+        print(codes);
+      }
+      else{
+        codes=[];
+      }
+    },);
+    return 'hai';
+  }
+
+  Widget Fill(BuildContext){
+    final GlobalKey<FormState> _key= GlobalKey<FormState>();
+    final nameControl =TextEditingController();
+    final costControl =TextEditingController();
+    final quantityControl=TextEditingController();
+    return Material(
+      child: Form(
+        key: _key,
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                TextFormField(
+                  controller: nameControl,
+                  decoration: InputDecoration(
+                    border: UnderlineInputBorder(),
+                    labelText: 'Item Name*',
+
+                  ),
+                ),
+                TextFormField(
+                  controller: costControl,
+                  decoration: InputDecoration(
+                    border: UnderlineInputBorder(),
+                    labelText: 'Cost',
+                  ),
+                  keyboardType: TextInputType.number ,
+                  inputFormatters: <TextInputFormatter>[
+                    FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
+                  ],
+                ),
+                TextFormField(
+                  controller: quantityControl,
+                  decoration: InputDecoration(
+                    border: UnderlineInputBorder(),
+                    labelText: 'Quantity',
+
+                  ),
+                  keyboardType: TextInputType.number,
+                  inputFormatters: <TextInputFormatter>[
+                    FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
+                  ],
+                ),
+                ElevatedButton(onPressed: (){
+                  print(nameControl.text);
+                  print(codes.length);
+                  print(goods.length);
+                  int l=goods.length-1;
+                  goods[l].id=nameControl.text;
+                  goods[l].cost=int.parse(costControl.text);
+                  goods[l].quantity=int.parse(quantityControl.text);
+                  Navigator.pop(context);}, child: Text('submit'),),
+              ],
+            ),
+          )),
+    );
+  }
+  List selected=[];
+  Widget Ourlist(BuildContext context)  {
+    // await Getdata();
+    print('ourlist');
+    print(selected);
+    print(goodsNames.length);
+    // print('$codes,------${goods.length},${goods[0].id}');
+    print(goodsNames.length);
     if(codes.length==0){
       return Center(child: Text('Add item',
       style: TextStyle(
@@ -75,11 +190,62 @@ class _Barcode_homeState extends State<Barcode_home> {
     else{
     return ListView.builder(
         padding: EdgeInsets.fromLTRB(12, 10, 15, 12),
-        itemCount: codes.length,
+        itemCount: goodsNames.length,
         itemBuilder: (context,int index){
+          // print('$index,${selected.contains(index)}');
+          // if(selected.contains(index)){isSelected=true;}
+          // else{isSelected=false;}
+          if(selected.contains(index)){
+            mycolor=Colors.grey;
+          }
+          else{
+            mycolor=Colors.white;
+          }
+          // print(isSelected);
           return ListTile(
+            tileColor: mycolor,
+            selected: isSelected,
             leading: Icon(Icons.list),
-            title: Text('${codes[index]}'),
+            title: Text('${goodsNames[index]['id']}'),
+            onTap: (){
+              Navigator.push(context, MaterialPageRoute(
+                  builder: (context){
+                return Info(index);
+                }
+              )
+          ,);
+          },
+            //
+            onLongPress: (){
+              showMenu(
+                items: <PopupMenuEntry>[
+                  PopupMenuItem(
+                    value: index,
+                    child: ElevatedButton.icon(
+                        icon: Icon(Icons.delete_forever),
+                        label: Text('Delete'),
+                        onPressed: () async {
+                          print(index);
+                          goodsNames.removeAt(index);
+                          codes.removeAt(index);
+                          await FirebaseFirestore.instance.collection('store').doc(inputData()).update({'codes': codes,'goods': goodsNames });
+                          setState(() {
+                          });
+                        }
+                    ),
+                  )
+                ],
+                context: context, position: new RelativeRect.fromLTRB(0,0,0,0),
+              );
+              // if(selected.contains(index)){
+              //   selected.remove(index);
+              // }
+              //   else{
+              //     selected.add(index);
+              // }
+              // setState(() {  });
+            },
+
           );
         }
         );
@@ -87,8 +253,71 @@ class _Barcode_homeState extends State<Barcode_home> {
     }
 
 
+  Widget OurChecklist(BuildContext context)  {
+    if(codes.length==0){
+      return Center(child: Text('Add item',
+        style: TextStyle(
+          fontSize: 26,
+          fontWeight: FontWeight.bold,
+        ),));
+    }
+    else{
+      return ListView.builder(
+          padding: EdgeInsets.fromLTRB(12, 10, 15, 12),
+          itemCount: goodsNames.length,
+          itemBuilder: (context,int index){
+            return CheckboxListTile(
+              tileColor: mycolor,
+              selected: isSelected,
+
+              value: timeDilation != 1.0,
+              secondary: Icon(Icons.list),
+              title: Text('${goodsNames[index]['id']}'),
+              onChanged: (bool ?value){
+                setState(() {
+                  timeDilation = value! ? 10.0 : 1.0;
+                });
+                print(isSelected);
+              },
+
+            );
+          }
+      );
+    }
+  }
+
+
+
   @override
   Widget build(BuildContext context) {
+    // var goods=new List<Item>;
+
+    // goods.add(Item(bcode: 'sdfgsf'));
+    // FirebaseFirestore.instance.collection('store').doc(FirebaseAuth.instance.currentUser!.displayName).get().then((DocumentSnapshot documentSnapshot) async{
+    //   if(documentSnapshot.exists){
+    //     print('---------------------------');
+    //     print(documentSnapshot.data());
+    //     Map <String, dynamic> x =documentSnapshot.data()!;
+    //     print(x['codes']);
+    //     codes=x['codes'];
+    //     print(codes);
+    //   }
+    //   else{
+    //     codes=[];
+    //   }
+    // },);
+    // FirebaseFirestore.instance.collection('store').doc(inputData()).get().then((DocumentSnapshot documentSnapshot){
+    //   if(documentSnapshot.exists){
+    //     print('---------------------------');
+    //     print(documentSnapshot.data());
+    //     Map <String, dynamic> x = documentSnapshot.data()!;
+    //     print(x['codes']);
+    //     codes= x['codes'];
+    //     print(codes);
+    //   }
+    // },);
+// ncSnapshot<T> is simply a representation of that data/error state. This is actually a useful API!
+
     return Scaffold(
       // drawerScrimColor: Colors.transparent,
       appBar: AppBar(
@@ -99,7 +328,7 @@ class _Barcode_homeState extends State<Barcode_home> {
           IconButton(
             tooltip: 'Profile',
           onPressed: () async{
-                    final provider = Provider.of<GoogleSignInProvider>(context,listen: false);
+                    // final provider = Provider.of<GoogleSignInProvider>(context,listen: false);
                     Navigator.push(context, MaterialPageRoute(
                       builder: (context){
                         return Home();
@@ -115,12 +344,52 @@ class _Barcode_homeState extends State<Barcode_home> {
           ),
         ],
       ),
-      body: Ourlist(context),
+      // body: Ourlist(context),
+
+      body: FutureBuilder<String>(
+          future: Getdata(),
+          builder: (context, AsyncSnapshot<String> snapshot) {
+            if (snapshot.hasData) {
+              return Ourlist(context);
+            } else {
+              return Center(child: CircularProgressIndicator());
+            }
+          }
+      ),
       floatingActionButton: Container(
         child: FloatingActionButton.extended(
           icon: Icon(Icons.camera_enhance),
           label: Text('Scan'),
-          onPressed: () =>scanBarcodeNormal(),
+          onPressed: () async {
+            await scanBarcodeNormal();
+            goods.add(Item(bcode: codes[0]));
+            // Map details ={'bcode':0,'id':'0','cost':0,'qauntity':0,'star':false};
+            FirebaseFirestore.instance.collection('store').doc(inputData()).set({'${inputData()}': '${inputData(1)}','codes': codes,'goods': goodsNames});
+            await Navigator.push(context, MaterialPageRoute(builder: (context)=>Fill(context)));
+
+            int ll=goods.length-1;
+            Map details ={'bcode':0,'id':'0','cost':0,'qauntity':0,'star':false};
+
+
+            details['bcode']=int.parse(goods[ll].bcode);details['id']=goods[ll].id;details['cost']=goods[ll].cost;
+            details['quantity']=goods[ll].quantity;details['star']=goods[ll].star;
+            goodsNames.add(details);
+
+            // for (int i=0;i<goods.length;i++){
+            //   details['bcode']=int.parse(goods[i].bcode);details['id']=goods[i].id;details['cost']=goods[i].cost;details['quantity']=goods[i].quantity;
+            //   details['star']=goods[i].star;
+            //   goodsNames.add(details);
+            // }
+            // for (int i=0;i<goods.length;i++){
+            //   print(goodsNames[i]['id']);
+            // }
+            // // print('next*****************************');
+            // for (int i=0;i<goods.length;i++){
+            //   print(goods[i].id);
+            // }
+          await FirebaseFirestore.instance.collection('store').doc(inputData()).update({'${inputData()}': '${inputData(1)}','goods': goodsNames });
+            setState(() {  });
+          },
         ),
       ),
       drawer: Drawer(
@@ -142,23 +411,14 @@ class _Barcode_homeState extends State<Barcode_home> {
               // height: 1830px,
            // width: 1340,
            image: AssetImage('assets/cartPink.png'),),
-        //     DrawerHeader(
-        //
-        //       child: Image(
-        //     image: AssetImage('assets/cartPink.png'),
-        // ),
-            //   child: Text('Drawer Header'),
-            //   decoration: BoxDecoration(
-            //     // color: Colors.blue,
-            //     child: Image(
-            //     image: AssetImage('assets/cartPink.png'),)
-            //   ),
-            // ),
             ListTile(
               // selectedTileColor: Colors.amber,
               title: Text('Clear list',style: TextStyle(fontSize: 18),),
               onTap: (){print('hello');
               codes.clear();
+              goods.clear();
+              goodsNames.clear();
+              FirebaseFirestore.instance.collection('store').doc(inputData()).set({'${inputData()}': '${inputData(1)}','codes': codes ,'goods': goods});
               setState(() {});
               print(codes.length);
               },
@@ -201,7 +461,7 @@ class _Barcode_homeState extends State<Barcode_home> {
 
 Future<APIClass> getData(code) async{
   //making request
-  http.Response response = await http.get(Uri.parse('file:///C:/Users/Shiva/Documents/cppbox/barcode=$code.html'));
+  http.Response response = await http.get(Uri.parse('/home/rarvis/AndroidStudioProjects/inventory_management/assets=$code.html'));
   final data = jsonDecode(response.body);
 
   return APIClass.fromJson(data);

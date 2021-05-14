@@ -15,6 +15,7 @@ class GoogleSignInProvider extends ChangeNotifier {
     notifyListeners();
   }
   Future login() async{
+
     isSigningIn=true;
     final user = await googleSignIn.signIn();
     if(user==null){

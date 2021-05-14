@@ -57,16 +57,16 @@ class _HomeState extends State<Home> {
   //   return
   // }
   Future<void> forLogout() async{
-    print('helloJi');
+    // print('helloJi');
     final provider = Provider.of<GoogleSignInProvider>(context, listen: false);
-    print('1');
+    // print('1');
     provider.logout();
-    print('2');
+    // print('2');
 
 }
   Widget Network(BuildContext context){
     if(user.displayName == null){
-      print('null');
+      // print('null');
       //Url url= https://wallpapercave.com/w/wp2698719;
       return CircleAvatar(
         maxRadius: 25,
@@ -75,7 +75,7 @@ class _HomeState extends State<Home> {
 
     }
     else{
-      print('not null');
+      // print('not null');
       return CircleAvatar(
         maxRadius: 25,
         backgroundImage: NetworkImage('${user.photoURL}'),
@@ -97,7 +97,20 @@ class _HomeState extends State<Home> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 // padding: EdgeInsets.fromLTRB(20, 20, 20,20),
                 children: <Widget>[
-                  Network(context),
+        //       TextField(
+        //       decoration: InputDecoration(
+        //           border: OutlineInputBorder(),
+        //       hintText: 'Enter name',
+        //   ),
+        // ),
+        // TextFormField(
+        //   decoration: InputDecoration(
+        //       border: UnderlineInputBorder(),
+        //       labelText: 'Enter your username'
+        //   ),
+        // ),
+
+        Network(context),
                   Name(context),
                   ElevatedButton(
                     child: Text('logout'),
@@ -105,6 +118,7 @@ class _HomeState extends State<Home> {
                     //    , )
               onPressed: () async{
                 final provider = Provider.of<GoogleSignInProvider>(context,listen: false);
+                codes.clear();
                 forLogout();
                 Navigator.push(context, MaterialPageRoute(
                     builder: (context){

@@ -12,10 +12,11 @@ class SignIn extends StatefulWidget {
   _SignInState createState() => _SignInState();
 }
 
+
 class _SignInState extends State<SignIn> {
   // dynamic result;
   final Authservice _auth =Authservice();
-  late bool pressed;
+  bool isloading =false;
 
    Widget build(BuildContext context) {
     //var FF8C1128;
@@ -65,17 +66,40 @@ class _SignInState extends State<SignIn> {
                 child: SizedBox(height: 2,)),
             Expanded(
                 flex: 1,
-                child: DecoratedBox(
+                child: isloading? Column(
+                  children: <Widget>[
+                    CircularProgressIndicator(),
+                    Divider(
+                      height: 20,
+                      color: Colors.transparent,
+                    ),
+                    Text("Please wait..."),
+                  ],
+                  mainAxisSize: MainAxisSize.min,
+                )
+                :DecoratedBox(
                   decoration:
                   ShapeDecoration(shape: Border.symmetric(), color: Colors.white),
                   child: OutlinedButton.icon(
                       icon: FaIcon(FontAwesomeIcons.google),
                       label: Text('Google SignIn'),
                     onPressed: (){
-                        print('hi');
+                        // ('hi');
+                        // setState(() {
+                        //   isloading = true;
+                        // });
                         final provider= Provider.of<GoogleSignInProvider>(context, listen: false);
+
+                        // isloading=true;
+                        // print('startedf-logging');
+                        // print(provider.isSigningIn);
                         provider.login();
-                        print('hello');
+                        // print('logged');
+                        // setState(() {
+                        //   isloading = false;
+                        // });
+                        // isloading=provider.isSigningIn;
+                        // print('hello');
                       }
                   ),
                 )
