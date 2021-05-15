@@ -10,7 +10,7 @@ import 'package:inventory_management/screens/home/loginHome.dart';
 
 
 // SignIn ,SignIn
-
+var basicStyle= TextStyle(fontSize: 18,fontFamily: 'NotoSans');
 class  Home extends StatefulWidget {
 
   @override
@@ -25,33 +25,7 @@ class _HomeState extends State<Home> {
   Widget Name(BuildContext context){
     // final provider = Provider.of<GoogleSignInProvider>(context,listen: false);
     name=user.displayName;
-    // if(provider.isSigningIn){
-    //   print('oookkk');
-    //   //return buildLoading();
-    // }else if(user.displayName!=null){
-    //   print('b');
-    //   print('${user.displayName}');
-    //   //   name=user.displayName;
-    //   // name= FirebaseAuth.instance.currentUser!.displayName;
-    //   // return Home();
-    // }
-    // else {
-    //   print('c');
-    //   print('3');
-    //   name= result.uid;
-    // }
-    // if(user.displayName == null){
-    //   print('null');
-    //   name= result.uid;
-    // }
-    // else{
-    //   print('not null');
-    //   //print(result.uid);
-    //   print('4');
-    //   print('${user.displayName}');
-    //   name=user.displayName;
-    // }
-    return Text('$name');
+    return Text('$name',style: basicStyle,);
   }
   // widget ForLogout(BuildContext context){
   //   return
@@ -66,10 +40,8 @@ class _HomeState extends State<Home> {
 }
   Widget Network(BuildContext context){
     if(user.displayName == null){
-      // print('null');
-      //Url url= https://wallpapercave.com/w/wp2698719;
       return CircleAvatar(
-        maxRadius: 25,
+        maxRadius: 40,
         backgroundImage: NetworkImage('https://wallpapercave.com/w/wp2698719'),
       );
 
@@ -77,7 +49,7 @@ class _HomeState extends State<Home> {
     else{
       // print('not null');
       return CircleAvatar(
-        maxRadius: 25,
+        maxRadius: 40,
         backgroundImage: NetworkImage('${user.photoURL}'),
       );
 
@@ -87,6 +59,7 @@ class _HomeState extends State<Home> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
+          backgroundColor: logocolordark,
           title: Text('Home'),
         ),
         body: Center(
@@ -97,22 +70,15 @@ class _HomeState extends State<Home> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 // padding: EdgeInsets.fromLTRB(20, 20, 20,20),
                 children: <Widget>[
-        //       TextField(
-        //       decoration: InputDecoration(
-        //           border: OutlineInputBorder(),
-        //       hintText: 'Enter name',
-        //   ),
-        // ),
-        // TextFormField(
-        //   decoration: InputDecoration(
-        //       border: UnderlineInputBorder(),
-        //       labelText: 'Enter your username'
-        //   ),
-        // ),
 
         Network(context),
+                  SizedBox(height: 15,),
                   Name(context),
+                  SizedBox(height: 20,),
                   ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      primary: logocolor,
+                    ),
                     child: Text('logout'),
                     // onPressed: () => forLogout()
                     //    , )

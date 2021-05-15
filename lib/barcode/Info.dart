@@ -27,8 +27,9 @@ import 'package:flutter/scheduler.dart' show timeDilation;
 
 import '../main.dart';
 
-
+var basicStyle= TextStyle(fontSize: 20,fontFamily: 'NotoSans');
 class Info extends StatefulWidget {
+
   // const Item({Key key}) : super(key: key);
   int index=0;
   Info(this.index);
@@ -43,6 +44,7 @@ class _InfoState extends State<Info> {
     final nameControl =TextEditingController(text: goodsNames[widget.index]['id']);
     final costControl =TextEditingController(text: goodsNames[widget.index]['cost'].toString());
     final quantityControl=TextEditingController(text: goodsNames[widget.index]['quantity'].toString());
+    // v
     return Material(
       child: Form(
           key: _key,
@@ -86,20 +88,17 @@ class _InfoState extends State<Info> {
                   ],
                 ),
                 ElevatedButton(onPressed: () async {
-                  // print(nameControl.text);
-                  // print(codes.length);
-                  // print(goods.length);
-                  // int l=goods.length-1;
+
                   goodsNames[widget.index]['id']=nameControl.text;
                   goodsNames[widget.index]['cost']=int.parse(costControl.text);
                   goodsNames[widget.index]['quantity']=int.parse(quantityControl.text);
                   await FirebaseFirestore.instance.collection('store').doc(inputData()).update({'goods': goodsNames });
                   setState(() {
-
                   });
                   Navigator.pop(BuildContext);
                   }
-                  , child: Text('submit'),),
+                  , child: Center(child: Text('submit')),
+                style: ElevatedButton.styleFrom(primary: logocolor),),
               ],
             ),
           )),
@@ -110,28 +109,42 @@ class _InfoState extends State<Info> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: logocolordark,
         title: Text('Info'),
       ),
       body:Center(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget> [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Text('Name: ${goodsNames[widget.index]['id']}'),
-                // Text(goodsNames[index]['id']),
-              ],
-            ),
-            Text('Barcode: ${goodsNames[widget.index]['bcode']}'),
-            Text('code: Rs.${goodsNames[widget.index]['cost']}'),
-            Text('Quantity: ${goodsNames[widget.index]['quantity']}'),
-            ElevatedButton.icon(onPressed: () async {
-              await Navigator.push(context, MaterialPageRoute(builder: (context)=>Edit(context)));
-            }, icon: Icon(Icons.edit), label: Text('edit'))
-          ],
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(40, 50, 50, 200),
+          child: Column(
+
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget> [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center, mainAxisAlignment: MainAxisAlignment.start,
+                children: <Widget>[Text('Name: ${goodsNames[widget.index]['id']}',style: basicStyle),],
+              ),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center, mainAxisAlignment: MainAxisAlignment.start,
+                children: <Widget>[Text('Barcode: ${goodsNames[widget.index]['bcode']}',style: basicStyle)],
+              ),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center, mainAxisAlignment: MainAxisAlignment.start,
+                children: <Widget>[Text('code: Rs.${goodsNames[widget.index]['cost']}',style: basicStyle),],
+              ),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center, mainAxisAlignment: MainAxisAlignment.start,
+                children: <Widget>[Text('Quantity: ${goodsNames[widget.index]['quantity']}',style: basicStyle),],
+              ),
+
+              // SizedBox(height: 15,),
+
+              ElevatedButton.icon(onPressed: () async {
+                await Navigator.push(context, MaterialPageRoute(builder: (context)=>Edit(context)));
+              }, icon: Icon(Icons.edit), label: Text('Edit'),
+              style: ElevatedButton.styleFrom(primary: logocolor),)
+            ],
+          ),
         ),
       )
     );

@@ -1,4 +1,5 @@
 import 'dart:convert';
+// import 'dart:js';
 import 'dart:ui';
 
 import 'package:firebase_auth/firebase_auth.dart';
@@ -6,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:inventory_management/barcode/Info.dart';
+import 'package:inventory_management/barcode/search.dart';
 import 'package:inventory_management/fonts/my_flutter_app_icons.dart';
 import 'package:inventory_management/item.dart';
 import 'package:inventory_management/screens/home/home.dart';
@@ -18,9 +20,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter/scheduler.dart' show timeDilation;
 
 import '../main.dart';
+import 'package:flutter/services.dart' show rootBundle;
 
 List<Item> goods=[];
 // List<Map> goodsNames=[];
+
+
 class Barcode_home extends StatefulWidget {
 
   @override
@@ -34,6 +39,9 @@ class _Barcode_homeState extends State<Barcode_home> {
   var result='kya hein ye ';
   var isSelected=false;
   var mycolor=Colors.white;
+
+  // Calldata();
+
   // Map <String, String> x ={'hi':'hello'};
   final FirebaseAuth auth = FirebaseAuth.instance;
 
@@ -62,6 +70,7 @@ class _Barcode_homeState extends State<Barcode_home> {
       codes.add(barcodeScanRes);
       // goods.add(Item(bcode: barcodeScanRes));
       code_names.add(getData(barcodeScanRes));
+      goods.add(Item(bcode: barcodeScanRes));
       print(codes);
     } on PlatformException {
       barcodeScanRes = 'Failed to get platform version.';
@@ -76,15 +85,7 @@ class _Barcode_homeState extends State<Barcode_home> {
       result = barcodeScanRes;
     });
   }
-  // Future<void> userProfile()async{
-  //   return Navigator.push(context, MaterialPageRoute(
-  //       builder: (context){
-  //        return Home();
-  //       }
-  //   )
-  //     ,);
-  //
-  // }
+
 
 
 
@@ -113,10 +114,30 @@ class _Barcode_homeState extends State<Barcode_home> {
     return 'hai';
   }
 
+
+
   Widget Fill(BuildContext){
+    int l=goods.length-1;
+    var nc;
+    var cc;
+    print(decoded);
+    print(goods.length);
+    print(goods[l].bcode);
+    print(codes[codes.length-1]);
+    var key=codes[codes.length-1];
+    if(decoded.containsKey('$key')){
+      print('neneeeeeeeeeeeeeeeeeeeeeeeeeeeee');
+      nc=decoded['$key']['name'];
+      cc=decoded['$key']['cost'];
+    }
+    else{
+      print('manaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
+      nc=null;
+      cc=null;
+    }
     final GlobalKey<FormState> _key= GlobalKey<FormState>();
-    final nameControl =TextEditingController();
-    final costControl =TextEditingController();
+    final nameControl =TextEditingController(text: nc);
+    final costControl =TextEditingController(text: cc);
     final quantityControl=TextEditingController();
     return Material(
       child: Form(
@@ -130,16 +151,22 @@ class _Barcode_homeState extends State<Barcode_home> {
                 TextFormField(
                   controller: nameControl,
                   decoration: InputDecoration(
-                    border: UnderlineInputBorder(),
+                    filled: true,
+                    fillColor: Colors.grey[200],
+                    // border: OutlineInputBorder(),
                     labelText: 'Item Name*',
+                      // fillColor: Colors.amber,
+                      // focusColor: Colors.cyan
 
                   ),
                 ),
                 TextFormField(
                   controller: costControl,
                   decoration: InputDecoration(
-                    border: UnderlineInputBorder(),
-                    labelText: 'Cost',
+                    // border: OutlineInputBorder(),
+                    filled: true,
+                    fillColor: Colors.grey[200],
+                    labelText: 'Cost(₹)',
                   ),
                   keyboardType: TextInputType.number ,
                   inputFormatters: <TextInputFormatter>[
@@ -148,9 +175,13 @@ class _Barcode_homeState extends State<Barcode_home> {
                 ),
                 TextFormField(
                   controller: quantityControl,
+                  // cursorColor: Theme.of(context).cursorColor,
                   decoration: InputDecoration(
-                    border: UnderlineInputBorder(),
+                    // border: OutlineInputBorder(),
+                      filled: true,
+                      fillColor: Colors.grey[200],
                     labelText: 'Quantity',
+
 
                   ),
                   keyboardType: TextInputType.number,
@@ -158,15 +189,21 @@ class _Barcode_homeState extends State<Barcode_home> {
                     FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
                   ],
                 ),
-                ElevatedButton(onPressed: (){
-                  print(nameControl.text);
-                  print(codes.length);
-                  print(goods.length);
-                  int l=goods.length-1;
-                  goods[l].id=nameControl.text;
-                  goods[l].cost=int.parse(costControl.text);
-                  goods[l].quantity=int.parse(quantityControl.text);
-                  Navigator.pop(context);}, child: Text('submit'),),
+                Center(
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      primary: logocolor,
+                    ),
+                    onPressed: (){
+                    print(nameControl.text);
+                    print(codes.length);
+                    print(goods.length);
+
+                    goods[l].id=nameControl.text;
+                    goods[l].cost=int.parse(costControl.text);
+                    goods[l].quantity=int.parse(quantityControl.text);
+                    Navigator.pop(context);}, child: Text('submit'),),
+                ),
               ],
             ),
           )),
@@ -209,11 +246,8 @@ class _Barcode_homeState extends State<Barcode_home> {
             title: Text('${goodsNames[index]['id']}'),
             onTap: (){
               Navigator.push(context, MaterialPageRoute(
-                  builder: (context){
-                return Info(index);
-                }
-              )
-          ,);
+                  builder: (context)=> Info(index)),).then((value)=>setState((){}));
+
           },
             //
             onLongPress: (){
@@ -221,8 +255,12 @@ class _Barcode_homeState extends State<Barcode_home> {
                 items: <PopupMenuEntry>[
                   PopupMenuItem(
                     value: index,
+
                     child: ElevatedButton.icon(
-                        icon: Icon(Icons.delete_forever),
+                      style: ElevatedButton.styleFrom(
+                        primary: logocolor,
+                      ),
+                        icon: Icon(Icons.delete),
                         label: Text('Delete'),
                         onPressed: () async {
                           print(index);
@@ -321,10 +359,43 @@ class _Barcode_homeState extends State<Barcode_home> {
     return Scaffold(
       // drawerScrimColor: Colors.transparent,
       appBar: AppBar(
+        backgroundColor: logocolordark,
         title: Text('My List'),
         centerTitle: true,
         elevation: 0,
         actions: <Widget>[
+          IconButton(onPressed: (){
+            final searchControl=TextEditingController();
+            showMenu(context: context,
+
+                position: new RelativeRect.fromLTRB(0, 0, 0, 0),
+                items: <PopupMenuEntry>[
+                  PopupMenuItem(
+                      child: Row(
+                        children: [
+                          Expanded(
+                            flex: 6,
+                            child: Container(
+                              width:1300,
+                              child: TextFormField(
+                                controller: searchControl,
+                                  decoration: InputDecoration(
+                                    labelText: 'Search',
+                                  ),
+                  ),
+                            ),
+                          ),
+                          Expanded(
+                            flex: 1,
+                            child: IconButton(onPressed: (){
+                              Navigator.push(context, MaterialPageRoute(builder: (context)=>Search(searchControl.text)));
+                            }, icon:Icon(Icons.search) ),
+                          ),
+                        ],
+                      ))
+                ],);
+            // Navigator.push(context, MaterialPageRoute(builder: (context)=>Search()));
+          }, icon: Icon(Icons.search)),
           IconButton(
             tooltip: 'Profile',
           onPressed: () async{
@@ -358,11 +429,12 @@ class _Barcode_homeState extends State<Barcode_home> {
       ),
       floatingActionButton: Container(
         child: FloatingActionButton.extended(
+          backgroundColor: logocolor,
           icon: Icon(Icons.camera_enhance),
           label: Text('Scan'),
           onPressed: () async {
             await scanBarcodeNormal();
-            goods.add(Item(bcode: codes[0]));
+            // goods.add(Item(bcode: codes[codes.length-1]));
             // Map details ={'bcode':0,'id':'0','cost':0,'qauntity':0,'star':false};
             FirebaseFirestore.instance.collection('store').doc(inputData()).set({'${inputData()}': '${inputData(1)}','codes': codes,'goods': goodsNames});
             await Navigator.push(context, MaterialPageRoute(builder: (context)=>Fill(context)));
@@ -389,6 +461,7 @@ class _Barcode_homeState extends State<Barcode_home> {
             // }
           await FirebaseFirestore.instance.collection('store').doc(inputData()).update({'${inputData()}': '${inputData(1)}','goods': goodsNames });
             setState(() {  });
+            // Calldata();
           },
         ),
       ),
@@ -397,20 +470,17 @@ class _Barcode_homeState extends State<Barcode_home> {
         child: ListView(
           padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
           children: <Widget>[
-            Container(
-              padding: EdgeInsets.all(0),
-              margin: EdgeInsets.all(0),
-              height: 100,
-              child: DrawerHeader(
-                child: Center(child: Text('IM')),
-                margin: EdgeInsets.all(0),
-                padding: EdgeInsets.all(0),
-              ),
-            ),
-            Image(
-              // height: 1830px,
-           // width: 1340,
-           image: AssetImage('assets/cartPink.png'),),
+            // Container(
+            //   padding: EdgeInsets.all(0),
+            //   margin: EdgeInsets.all(0),
+            //   height: 100,
+            //   child: DrawerHeader(
+            //     child: Center(child: Text('IM')),
+            //     margin: EdgeInsets.all(0),
+            //     padding: EdgeInsets.all(0),
+            //   ),
+            // ),
+            Image(image: AssetImage('assets/IM-logos.jpeg'),),
             ListTile(
               // selectedTileColor: Colors.amber,
               title: Text('Clear list',style: TextStyle(fontSize: 18),),
@@ -458,6 +528,12 @@ class _Barcode_homeState extends State<Barcode_home> {
     );
   }
 }
+
+// import 'dart:async' show Future;
+
+
+
+
 
 Future<APIClass> getData(code) async{
   //making request

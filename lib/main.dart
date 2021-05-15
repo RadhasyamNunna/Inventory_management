@@ -1,5 +1,7 @@
 // import 'dart:js';
 
+import 'dart:convert';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:inventory_management/screens/home/loginHome.dart';
@@ -15,6 +17,7 @@ import 'package:provider/provider.dart';
 import 'package:inventory_management/screens/authentication/googleprovider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:inventory_management/barcode/barcode_home.dart';
+import 'package:flutter/services.dart' show rootBundle;
 
 
  dynamic result;
@@ -35,11 +38,32 @@ String inputData([int a=0]) {
   else{return name;}
   // here you write the codes to input the data into firestore
 }
+
+Map<String,dynamic> decoded={};
+const logocolor=Color(0xff66A3BB);
+const logocolordark=Color(0xff253A47);
+
+Future Calldata() async {
+  print('////////////////////////////////////]]]]]]]]]]]]]');
+  String jsonCrossword = await rootBundle.loadString('assets/store_detail.json');
+  decoded = jsonDecode(jsonCrossword);
+  // decoded=Map<String,dynamic>.from(decoded);
+  print(decoded.containsKey('8901725105303'));
+  print(jsonCrossword);
+  print(decoded.runtimeType);
+
+  print('=====================)))))))))))))');
+  // return decoded;
+}
 Future<void> main() async {
   // print('hello');
   print('hii prends');
+
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  await Calldata();
+  // print('8888888888888888888888888888888');
+  print(decoded);
   // FirebaseFirestore.instance.collection('store').doc(inputData()).get().then((DocumentSnapshot documentSnapshot){
   //   if(documentSnapshot.exists){
   //     print('---------------------------');
